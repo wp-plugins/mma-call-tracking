@@ -21,8 +21,7 @@ how visitors find your website and call your business.
 For example, you can have one or more tracking numbers to do things like:
 
 * Track all calls on 1 number.
-* Track visitors from PPC ads.  (Direct integration w/ Google Adwords
-* conversions)
+* Track visitors from PPC ads.  (Direct integration w/ Google Adwords conversions)
 * Track visitors from Organic Search.
 * Track direct referral visitors from sites like Yelp, Foursquare, Directories,
 	etc.
