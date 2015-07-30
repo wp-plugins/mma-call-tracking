@@ -12,7 +12,7 @@ Call Tracking by Message Metric.
 
 == Description ==
 
-Message Metric call tracking empowers businesses to find and identify the
+[Message Metric](http://www.messagemetric.com) call tracking empowers businesses to find and identify the
 marketing campaigns that create phone calls. Our WordPress plugin is very
 easy-to-install and allows you to dynamically swap one or more phone numbers
 displayed on any page of your website based on referral sources. We can track
@@ -21,8 +21,7 @@ how visitors find your website and call your business.
 For example, you can have one or more tracking numbers to do things like:
 
 * Track all calls on 1 number.
-* Track visitors from PPC ads.  (Direct integration w/ Google Adwords
-* conversions)
+* Track visitors from PPC ads.  (Direct integration w/ Google Adwords conversions)
 * Track visitors from Organic Search.
 * Track direct referral visitors from sites like Yelp, Foursquare, Directories,
 	etc.
@@ -33,8 +32,7 @@ number or numbers you want replaced with any rules and we’ll automatically
 replace the phone number on your website with the appropriate tracking phone
 number based on your rules.
 
-* Learn more about Message Metric at: [http://messagemetric.com](http://messagemetric.com)
-* See the WordPress plugin documentation at: [http://messagemetric.com/wordpress-plugin/](http://messagemetric.com/wordpress-plugin/)
+* Learn more about Message Metric at: [http://www.messagemetric.com](http://www.messagemetric.com)
 
 == Installation ==
 
