@@ -24,11 +24,12 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.0.0
+Version: 2.0.1
 Author URI: http://www.messagemetric.com
 
 Change Log:
   2.0.0 - 150728 - First public release via WordPress.org.
+  2.0.1 - 150730 - Fix plugin directory structure.
 */
 
 if (!class_exists("MessageMetricAssistant")) :
