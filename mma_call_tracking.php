@@ -80,7 +80,7 @@ class MessageMetricAssistant {
 		$config_name = $this->plugin_name . " " . __('Options', $this->plugin_plug);
 
 		add_menu_page($this->plugin_name, $this->plugin_name, 'administrator', $this->plugin_plug.'_menu',
-			array(&$this, 'config_options_page'), $this->plugin_dir_url(__FILE__).'assets/icon.png');
+			array(&$this, 'config_options_page'), $this->plugin_dir_url(__FILE__).'icon.png');
 		add_submenu_page($this->plugin_plug.'_menu', 'Settings', 'Settings', 'administrator', $this->plugin_plug.'_menu',
 			array(&$this, 'config_options_page'));
 		add_submenu_page($this->plugin_plug.'_menu', 'Phone Numbers', 'Phone Numbers', 'administrator', $this->plugin_plug.'_menu2',
