@@ -24,12 +24,8 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.0.1
+Version: 2.0.2
 Author URI: http://www.messagemetric.com
-
-Change Log:
-  2.0.0 - 150728 - First public release via WordPress.org.
-  2.0.1 - 150730 - Fix plugin directory structure.
 */
 
 if (!class_exists("MessageMetricAssistant")) :
@@ -443,7 +439,7 @@ jQuery(function(){
 			$phone = $this->normalize_phone($phone);
 			$phones[] = '&phone[]='.$phone.'-'.$phone_data['var1'].'-'.$phone_data['var2'];
 		}
-		$phones = '&'.implode('&', $phones);
+		$phones = is_array($phones) ? ('&'.implode('&', $phones)) : '';
 
 		$js  = '<script>';
 		$js .=  '!function(d,undefined){var $mma=function(e){e=e.replace(/[\[]/,"\[").replace(/[\]]/,"\]");';
@@ -853,6 +849,7 @@ jQuery(function(){
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 		curl_setopt($ch, CURLOPT_POST, TRUE);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
 		$rc = curl_exec($ch);

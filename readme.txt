@@ -23,8 +23,7 @@ For example, you can have one or more tracking numbers to do things like:
 * Track all calls on 1 number.
 * Track visitors from PPC ads.  (Direct integration w/ Google Adwords conversions)
 * Track visitors from Organic Search.
-* Track direct referral visitors from sites like Yelp, Foursquare, Directories,
-	etc.
+* Track direct referral visitors from sites like Yelp, Foursquare, Directories, etc.
 
 To get started you simply install the wordpress plugin, connect to your
 Message Metric Call Tracking Account, choose the JavaScript option and the
@@ -65,10 +64,20 @@ Yes, you must have a Message Metric account to use MMA Call Tracking.
 
 == Changelog ==
 
-= 2.0 =
+= 2.0.2 =
+* SSL verification fix for some servers.
+* Fix for PHP notice.
+
+= 2.0.1 =
+* Fix plugin directory structure.
+
+= 2.0.0 =
 * First public release via WordPress.org.
 
 == Upgrade Notice ==
 
-= 2.0 =
+= 2.0.2 =
+Correct problem that prevents MMA Call Tracking from connecting to Message Metric on some servers.
+
+= 2.0.0 =
 Simplified updates via WordPress.org.
