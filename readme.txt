@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.0.3 =
+* Readme updates.
+
 = 2.0.2 =
 * SSL verification fix for some servers.
 * Fix for PHP notice.
