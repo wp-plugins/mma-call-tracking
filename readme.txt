@@ -35,8 +35,8 @@ number based on your rules.
 
 == Installation ==
 
-1.	Install MMA Call Tracking either via the WordPress.org plugin directory, or
-	by uploading the files to your server.
+1.	Install MMA [Call Tracking](http://wordpress.org/plugins/mma-call-tracking/) either via the
+	WordPress.org plugin directory, or by uploading the files to your server.
 2.	Activate MMA Call Tracking from the 'Plugins' menu in WordPress.
 3.	Configure the plugin from the 'MMA Call Tracking > Settings' menu in WordPress:
 	1.	Enter your Message Metric username and authentication key.
@@ -55,7 +55,7 @@ number based on your rules.
 
 = Do I need to have a Message Metric account to use MMA Call Tracking? =
 
-Yes, you must have a Message Metric account to use MMA Call Tracking.
+Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin](https://wordpress.org/plugins/mma-call-tracking/).
 
 == Screenshots ==
 
