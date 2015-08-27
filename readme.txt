@@ -3,7 +3,7 @@ Contributors: MessageMetric
 Donate link: http://www.messagemetric.com/
 Tags: call tracking, conversion tracking, optimization, ppc, seo, adwords, analytics
 Requires at least: 4.0.0
-Tested up to: 4.2.3
+Tested up to: 4.3
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -64,6 +64,21 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.0.7 =
+* Fix scriptTag.src string quotes used with injecting javascript.
+
+= 2.0.6 =
+* Inject javascript only when in shortcode mode.
+* Improve method of javascript injection to work with Async JS and CSS plugin.
+
+= 2.0.5 =
+* Fix javascript bug that caused invalid example URL to appear when adding a URL Params phone to a group.
+
+= 2.0.4 =
+* Rename Var #1/Var #2 phone settings to Location/Split Test.
+* Remove default phone number checks when in Javascript mode.
+* Minor bug fixes.
+
 = 2.0.3 =
 * Readme updates.
 
@@ -71,16 +86,17 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 * SSL verification fix for some servers.
 * Fix for PHP notice.
 
-= 2.0.1 =
-* Fix plugin directory structure.
-
-= 2.0.0 =
-* First public release via WordPress.org.
-
 == Upgrade Notice ==
+
+= 2.0.7 =
+Fix improper use of quotes leading to incorrect phone number replacement.
+
+= 2.0.6 =
+Fix white screen when used in conjunction with Async JS and CSS plugin.
+
+= 2.0.4 =
+Improve usability by renaming Var #1/Var #2 phone settings and removing unecessary default phone number
+checks when in Javascript mode.
 
 = 2.0.2 =
 Correct problem that prevents MMA Call Tracking from connecting to Message Metric on some servers.
-
-= 2.0.0 =
-Simplified updates via WordPress.org.

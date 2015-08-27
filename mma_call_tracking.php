@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.0.3
+Version: 2.0.7
 Author URI: http://www.messagemetric.com
 */
 
@@ -51,7 +51,12 @@ class MessageMetricAssistant {
 	function __construct() {
 		$this->load_options();
 
-		if (!empty($_POST['mma_save_config']) || !empty($_POST['mma_save_phones'])) $this->handle_config_options_page();
+		if (!empty($_GET['mma']) && $_GET['mma'] == 'replace') {
+			require 'mma_js.php';
+			exit;
+		} else if (!empty($_POST['mma_save_config']) || !empty($_POST['mma_save_phones'])) {
+			$this->handle_config_options_page();
+		}
 
 		$this->init_session();
 		add_action('init', array(&$this, 'init_plugin'));
@@ -59,8 +64,9 @@ class MessageMetricAssistant {
 			/* Dashboard initialization */
 			add_action('admin_menu', array(&$this, 'add_menu_pages'));
 		} else {
-			add_action('parse_request', array(&$this, 'parse_request'));
-			add_action('wp_footer', array(&$this, 'format_javascript'));
+			if ($this->options['assist_mode'] == 'javascript') {
+				add_action('wp_footer', array(&$this, 'format_javascript'));
+			}
 		}
 
 		add_shortcode('msgmetric_phone', array(&$this, 'shortcode_phone_fn'));
@@ -228,7 +234,7 @@ class MessageMetricAssistant {
 </div>
 
 <?php
-		echo $this->format_settings_footer();
+		echo $this->format_settings_footer('options');
 	}
 
 	/* config_phones_page
@@ -265,7 +271,7 @@ table.phone-list select.setting-paid{ margin-right: 2px; width: 23%; }
   <p style="color: #0A0; margin: 4px 0px 4px 10px"><?php echo $this->post_message ?></p>
   <?php } ?>
 
-  <form name="<?php echo $this->plugin_plug ?>'_phones_form" method="post" autocomplete="off">
+  <form name="<?php echo $this->plugin_plug ?>_phones_form" class="phones-form" method="post" autocomplete="off">
 	<table class="form-table">
 
 	<?php if ($this->options['assist_mode'] == 'javascript') { ?>
@@ -276,7 +282,7 @@ table.phone-list select.setting-paid{ margin-right: 2px; width: 23%; }
 	<tr><td>
 
 	<table width="100%" class="replacement-list phone-list">
-	<tr><th><strong>Phone #</strong></th><th><strong>Var #1</strong></th><th><strong>Var #2</strong></th><th>Action</th></tr>
+	<tr><th><strong>Phone #</strong></th><th><strong>Location</strong></th><th><strong>Split Test</strong></th><th>Action</th></tr>
 	<?php
 	$replace_list = !empty($this->options['replace_list']) ? $this->options['replace_list'] : array(''=>array('var1'=>'', 'var2'=>''));
 	$replace_list['-TEMPLATE-'] = array('var1'=>'', 'var2'=>'');
@@ -309,8 +315,8 @@ table.phone-list select.setting-paid{ margin-right: 2px; width: 23%; }
 		echo   '<th><strong>Title</strong></th>';
 		echo   '<th><strong>Group</strong></th>';
 		echo   '<th><strong>Display When</strong></th>';
-		echo   '<th><strong>Var #1</strong></th>';
-		echo   '<th><strong>Var #2</strong></th>';
+		echo   '<th><strong>Location</strong></th>';
+		echo   '<th><strong>Split Test</strong></th>';
 		echo   '<th class="wide"><strong>Settings</strong></th>';
 		echo '</tr>';
 
@@ -341,7 +347,7 @@ table.phone-list select.setting-paid{ margin-right: 2px; width: 23%; }
 		echo '</p>';
 	}
 
-	echo $this->format_settings_footer();
+	echo $this->format_settings_footer('phones');
 	?>
 
   </form>
@@ -380,19 +386,19 @@ jQuery(function(){
 
 		return false;
 	});
-	jQuery('.phone-group,.phone-var1,.phone-var2').change(function(){
+	jQuery('.phones-form').on('change', '.phone-group,.phone-var1,.phone-var2', function(){
 		var $opt = jQuery(this).find('option:selected');
 		var $parent = jQuery(this).closest('tr');
 		var type = jQuery(this).data('type');
 		var val = $opt.val();
 
 		if (val === '-add-') {
-			var vname = prompt('Please enter a '+(type=='group'?'group name':'value')+':', '');
-			vname !== null && (vname = vname.replace(/[^0-9A-Za-z _]+/, ''));
-			if (vname !== null && $opt.parent().find('option[value="'+vname+'"]').length === 0) {
-				var $opt = jQuery('<option value="'+vname+'">'+vname+'</option>');
+			val = prompt('Please enter a '+(type=='group'?'group name':'value')+':', '');
+			val !== null && (val = val.replace(/[^0-9A-Za-z _]+/, ''));
+			if (val!== null && $opt.parent().find('option[value="'+val+'"]').length === 0) {
+				var $opt = jQuery('<option value="'+val+'">'+val+'</option>');
 				jQuery('.phone-'+type).append($opt);
-				jQuery(this).val(vname);
+				jQuery(this).val(val);
 			} else {
 				jQuery(this).val('');
 			}
@@ -408,6 +414,7 @@ jQuery(function(){
 
 		return false;
 	});
+	<?php if ($this->options['assist_mode'] != 'javascript') { ?>
 	jQuery('input[name=mma_save_phones]').click(function(){
 		var dfltPhone = false;
 		jQuery('.phone-when').each(function(){
@@ -420,10 +427,11 @@ jQuery(function(){
 			}
 		});
 		if (!dfltPhone) {
-			alert('At least one phone number must be have Display When set to "Default" and have no Var #1 and no Var #2 value.');
+			alert('At least one phone number must be have Display When set to "Default" and have no "Location" and no "Split Test" value.');
 			return false;
 		}
 	});
+	<?php } ?>
 });
 </script>
 <?php
@@ -444,7 +452,12 @@ jQuery(function(){
 		$js  = '<script>';
 		$js .=  '!function(d,undefined){var $mma=function(e){e=e.replace(/[\[]/,"\[").replace(/[\]]/,"\]");';
 		$js .=  'var t=new RegExp("[\?&]"+e+"=([^&#]*)"),n=t.exec(location.search);return n===null?"":decodeURIComponent(n[1].replace(/\+/g," "))};';
-		$js .=  'd.write(\'\x3Cscript src="'.$url.$gclid.$term.$refurl.$key.$phones.'">\x3C/script>\');';
+		$js .=  'var scriptTag = document.createElement("script");';
+		$js .=  'scriptTag.type = "text/javascript";';
+		$js .=  'scriptTag.async = true;';
+		$js .=  'scriptTag.src = \''.$url.$gclid.$term.$refurl.$key.$phones.'\';';
+		$js .=  'var s = document.getElementsByTagName("script")[0];';
+		$js .=  's.parentNode.insertBefore(scriptTag, s);';
 		$js .=  '}(document);';
 		$js .= '</script>';
 
@@ -468,7 +481,7 @@ jQuery(function(){
 		return $phone;
 	}
 
-	function format_settings_footer() {
+	function format_settings_footer($page) {
 		if ($this->options['assist_mode'] == 'shortcode') {
 			$html  = '<p>Use the <code>[msgmetric_phone]</code> shortcode to display the correct phone number on your site.</p>';
 			$html .= '<p>By default the <code>[msgmetric_phone]</code> displays the phone number with the format: (###) ###-####.  You may change the formatting of ';
@@ -480,14 +493,16 @@ jQuery(function(){
 			$html .=   'number - usually your primary contact number - before displaying your Message Metric number.  This can be helpful for SEO ';
 			$html .=   'as this number will consistently be visible to search engines.</p>';
 		}
-		$html .= '<p>Use the <code>var1</code> and <code>var2</code> values to restrict the phone numbers that are displayed. This may be useful, ';
-		$html .=   'for example, if your business has multiple locations. In that case you could create a <code>var1</code> value for each location. ';
-		$html .=   '<code>var1="Los Angeles"</code> could then be used to display only phone numbers associated ';
-		$html .=   'with Los Angeles. <code>var2</code> values may be used to further distinguish when phone numbers are displayed such as when ';
-		$html .=   'your web site is set up for split testing. ';
-		$html .=   'The optional <code>var1</code> and <code>var2</code> values tell Message Metric to only ';
-		$html .=   'display the phone numbers matching the values identified. ';
-		$html .= '</p>';
+		if ($page == 'phones') {
+			$html .= '<p>Use the <code>location</code> and <code>test</code> values to restrict the phone numbers that are displayed. This may be useful, ';
+			$html .=   'for example, if your business has multiple locations. In that case you could create a <code>location</code> value for each location. ';
+			$html .=   '<code>location="Los Angeles"</code> could then be used to display only phone numbers associated ';
+			$html .=   'with Los Angeles. <code>test</code> values may be used to further distinguish when phone numbers are displayed such as when ';
+			$html .=   'your web site is set up for split testing. ';
+			$html .=   'The optional <code>location</code> and <code>test</code> values tell Message Metric to only ';
+			$html .=   'display the phone numbers matching the values specified. ';
+			$html .= '</p>';
+		}
 
 		if (empty($this->options['phone_list'])) {
 			$url = MSGMETRIC_SERVER_URL.'?msgmetric_login=1&login_username='.$this->options['username'];
@@ -783,7 +798,7 @@ jQuery(function(){
 
 			if ($validDefault) {
 				$this->save_phone_data();
-			} else {
+			} else if ($this->options['assist_mode'] != 'javascript') {
 				$err = 'no default phone number was defined.';
 			}
 		}
@@ -826,13 +841,6 @@ jQuery(function(){
 		return substr(preg_replace('/\D/', '', $phone), -10);
 	}
 
-	function parse_request($wp) {
-		if (!empty($_GET['mma']) && $_GET['mma'] == 'replace') {
-			require 'mma_js.php';
-			exit;
-		}
-	}
-
 	function send_server_request($req_type, $params=array()) {
 		$url = MSGMETRIC_SERVER_URL.'?msgmetric_worker='.$req_type;
 		$auth_token = uniqid();
@@ -871,7 +879,9 @@ jQuery(function(){
 	function shortcode_phone_fn($atts, $content=null) {
 		$atts = shortcode_atts(array(
 			'format'=>false,
+			'location'=>false, /* Alias for 'var1' */
 			'phone'=>false,
+			'test'=>false, /* Alias for 'var2' */
 			'var1'=>false,
 			'var2'=>false,
 			),
@@ -880,6 +890,9 @@ jQuery(function(){
 		$term = $_SESSION['MSGMETRIC_ASSISTANT_ADWORD_TERM'];
 		$refurl = $_SERVER['HTTP_REFERER'];
 		$gclid = $_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'];
+
+		if ($atts['location']) $atts['var1'] = $atts['location'];
+		if ($atts['test']) $atts['var2'] = $atts['test'];
 
 		$phone = $this->format_phone($this->get_msgmetric_phone($term, $refurl, $gclid, $atts['var1'], $atts['var2']));
 		$alt_phone = $atts['phone'] ? $this->format_phone($atts['phone'], $atts['format']) : false;
