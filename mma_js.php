@@ -23,7 +23,7 @@ $gclid = !empty($_REQUEST['gclid']) ? $_REQUEST['gclid'] : '';
 $rphones = array();
 $phones = $_GET['phone'];
 foreach ($phones as $phone) {
-	if (preg_match('/(\d+)-(\w*)-(\w*)/', $phone, $match)) {
+	if (preg_match('/(\d+)-([\w ]*)-([\w ]*)/', $phone, $match)) {
 		$rphone = $this->normalize_phone($match[1]);
 		$rphones[$rphone] = $this->normalize_phone($this->get_msgmetric_phone($term, $refurl, $gclid, $match[2], $match[3]));
 	}
