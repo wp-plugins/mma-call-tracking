@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.0.8 =
+* Fixes to make location and split test values work with spaces.
+
 = 2.0.7 =
 * Fix scriptTag.src string quotes used with injecting javascript.
 
@@ -79,14 +82,10 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 * Remove default phone number checks when in Javascript mode.
 * Minor bug fixes.
 
-= 2.0.3 =
-* Readme updates.
-
-= 2.0.2 =
-* SSL verification fix for some servers.
-* Fix for PHP notice.
-
 == Upgrade Notice ==
+
+= 2.0.8 =
+Fixes problem with number not getting replaced when the location or split test value contains a space characater.
 
 = 2.0.7 =
 Fix improper use of quotes leading to incorrect phone number replacement.
@@ -97,6 +96,3 @@ Fix white screen when used in conjunction with Async JS and CSS plugin.
 = 2.0.4 =
 Improve usability by renaming Var #1/Var #2 phone settings and removing unecessary default phone number
 checks when in Javascript mode.
-
-= 2.0.2 =
-Correct problem that prevents MMA Call Tracking from connecting to Message Metric on some servers.
