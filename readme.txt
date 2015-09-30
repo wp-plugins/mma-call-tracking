@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.1.0 =
+* Add support for mma-noreplace class.
+
 = 2.0.8 =
 * Fixes to make location and split test values work with spaces.
 
@@ -77,12 +80,11 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 = 2.0.5 =
 * Fix javascript bug that caused invalid example URL to appear when adding a URL Params phone to a group.
 
-= 2.0.4 =
-* Rename Var #1/Var #2 phone settings to Location/Split Test.
-* Remove default phone number checks when in Javascript mode.
-* Minor bug fixes.
-
 == Upgrade Notice ==
+
+= 2.1.0 =
+* Add support for a mma-noreplace class that can be added to tags to prevent a phone number inside that tag
+  from getting replaced.
 
 = 2.0.8 =
 Fixes problem with number not getting replaced when the location or split test value contains a space characater.
@@ -92,7 +94,3 @@ Fix improper use of quotes leading to incorrect phone number replacement.
 
 = 2.0.6 =
 Fix white screen when used in conjunction with Async JS and CSS plugin.
-
-= 2.0.4 =
-Improve usability by renaming Var #1/Var #2 phone settings and removing unecessary default phone number
-checks when in Javascript mode.
