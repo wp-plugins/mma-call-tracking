@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.1.0
+Version: 2.1.1
 Author URI: http://www.messagemetric.com
 */
 
@@ -51,6 +51,9 @@ class MessageMetricAssistant {
 	function __construct() {
 		$this->load_options();
 
+		/* Initialize the session AFTER load_options */
+		$this->init_session();
+
 		if (!empty($_GET['mma']) && $_GET['mma'] == 'replace') {
 			require 'mma_js.php';
 			exit;
@@ -58,7 +61,6 @@ class MessageMetricAssistant {
 			$this->handle_config_options_page();
 		}
 
-		$this->init_session();
 		add_action('init', array(&$this, 'init_plugin'));
 		if (is_admin()) {
 			/* Dashboard initialization */
@@ -118,6 +120,15 @@ class MessageMetricAssistant {
 		}
 		if (!empty($_REQUEST['gclid']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'])) {
 			$_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'] = $_REQUEST['gclid'];
+
+			$click_data = array(
+				'customer_id'=>$this->options['customer_id'],
+				'conversion'=>$this->options['conversion_name'],
+				'gclid'=>$_REQUEST['gclid'],
+				'tentative'=>1,
+				);
+
+			$this->send_server_request('record_ad_click', $click_data);
 		}
 		$_SESSION['MSGMETRIC_ASSISTANT_PHONES'][''] = $this->get_msgmetric_phone();
 	}
@@ -622,21 +633,19 @@ jQuery(function(){
 			$did_match = true;
 		}
 
-		/* If there is a gclid and the matched phone number is a paid number, record the click. */
-		if ($this->options['phone_list'][$match]['when'] == 'paid' && !empty($gclid)) {
+		/* If there is a gclid, notify Message Metric of the click. */
+		if (!empty($gclid)) {
 			$click_data = array(
 				'customer_id'=>$this->options['customer_id'],
 				'conversion'=>$this->options['conversion_name'],
 				'gclid'=>$gclid,
 				'phone'=>$match,
-				'match'=>$did_match ? 1 : 0);
+				'match'=>$did_match ? 1 : 0,
+				'paid'=>($this->options['phone_list'][$match]['when'] == 'paid'),
+				'tentative'=>0,
+				);
 
-			if (!empty($this->options['customer_id'])) {
-				$this->send_server_request('record_ad_click', $click_data);
-			} else {
-				error_log('mma_call_tracking: error recording adword click, missing customer id: '.
-					var_export($click_data,1));
-			}
+			$this->send_server_request('record_ad_click', $click_data);
 			unset($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID']);
 		}
 
@@ -861,6 +870,13 @@ jQuery(function(){
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, TRUE);
 		$rc = curl_exec($ch);
+		$info = curl_getinfo($ch);
+
+		curl_close($ch);
+
+		if (!in_array($info['http_code'], array(200, 201, 202, 204))) {
+			error_log('mma_call_tracking: send_server_request: error('.$info['http_code'].'): '.$req_type.': '.var_export($params,1));
+		}
 
 		return $rc;
 	}

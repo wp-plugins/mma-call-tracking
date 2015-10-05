@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.1.1 =
+* Improve error handling.
+
 = 2.1.0 =
 * Add support for mma-noreplace class.
 
@@ -81,6 +84,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 * Fix javascript bug that caused invalid example URL to appear when adding a URL Params phone to a group.
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+* Improve error handling.
 
 = 2.1.0 =
 * Add support for a mma-noreplace class that can be added to tags to prevent a phone number inside that tag
