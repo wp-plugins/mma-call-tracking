@@ -64,26 +64,19 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.2.0 =
+* Implement new, simplified call tracking javascript.
+
 = 2.1.1 =
 * Improve error handling.
 
 = 2.1.0 =
 * Add support for mma-noreplace class.
 
-= 2.0.8 =
-* Fixes to make location and split test values work with spaces.
-
-= 2.0.7 =
-* Fix scriptTag.src string quotes used with injecting javascript.
-
-= 2.0.6 =
-* Inject javascript only when in shortcode mode.
-* Improve method of javascript injection to work with Async JS and CSS plugin.
-
-= 2.0.5 =
-* Fix javascript bug that caused invalid example URL to appear when adding a URL Params phone to a group.
-
 == Upgrade Notice ==
+
+= 2.2.0 =
+* Implement new, more simplified, more robust call tracking javascript code.
 
 = 2.1.1 =
 * Improve error handling.
@@ -91,12 +84,3 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 = 2.1.0 =
 * Add support for a mma-noreplace class that can be added to tags to prevent a phone number inside that tag
   from getting replaced.
-
-= 2.0.8 =
-Fixes problem with number not getting replaced when the location or split test value contains a space characater.
-
-= 2.0.7 =
-Fix improper use of quotes leading to incorrect phone number replacement.
-
-= 2.0.6 =
-Fix white screen when used in conjunction with Async JS and CSS plugin.
