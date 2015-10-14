@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.2.1 =
+* Add logging of query arguments, referrer, and user agent.
+
 = 2.2.0 =
 * Implement new, simplified call tracking javascript.
 

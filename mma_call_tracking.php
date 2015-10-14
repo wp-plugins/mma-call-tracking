@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.2.0
+Version: 2.2.1
 Author URI: http://www.messagemetric.com
 */
 
@@ -120,6 +120,10 @@ class MessageMetricAssistant {
 			$_SESSION['MSGMETRIC_ASSISTANT_ADWORD_TERM'] = $_REQUEST['mma_term'];
 		}
 		if (!empty($_REQUEST['gclid']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'])) {
+			error_log('mma_call_tracking: ad click: mma_term='.$_REQUEST['mma_term'].', gclid='.$_REQUEST['gclid']);
+			if (!empty($_SERVER['HTTP_REFERER'])) error_log('mma_call_tracking: ad click: referrer='.$_SERVER['HTTP_REFERER']);
+			error_log('mma_call_tracking: ad click: user agent='.$_SERVER['HTTP_USER_AGENT']);
+
 			$_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'] = $_REQUEST['gclid'];
 
 			if (!MMA_SIMPLIFIED_TRACKING) {
