@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.2.2 =
+* Add functionality to replace phone numbers inside tel:// links.
+
 = 2.2.1 =
 * Add logging of query arguments, referrer, and user agent.
 
@@ -77,6 +80,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 * Add support for mma-noreplace class.
 
 == Upgrade Notice ==
+
+= 2.2.2 =
+* Add functionality to replace phone numbers inside tel:// links.
 
 = 2.2.0 =
 * Implement new, more simplified, more robust call tracking javascript code.

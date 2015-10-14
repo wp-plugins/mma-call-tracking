@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.2.1
+Version: 2.2.2
 Author URI: http://www.messagemetric.com
 */
 
@@ -516,9 +516,10 @@ jQuery(function(){
 			$tphone = $this->format_phone($phone, '+1##########', false);
 			foreach ($patternList as $pattern) {
 				list($regex, $nphone) = $this->get_regex($pattern, "$rphone", $phone);
-				echo 'farDT(document.body, { find: "'.$regex.'", replace: mob ? "<a href=\"tel:'.$tphone.'\">'.$nphone.'</a>" : "'.$nphone.'", filterElements: fel });';
+				echo 'farDT(document.body, { find: "'.$regex.'", replace: mob ? "<a href=\"tel:'.$tphone.'\">'.$nphone.'</a>" : "'.$nphone.'", filterElements: fel });'.PHP_EOL;
 			}
 		}
+		echo 'var $a=$("a[href^=\"tel:\"]");$a.attr("href", $a.attr("href").replace("'.$rphone.'", "'.$phone.'"))'.PHP_EOL;
 		?>
 		});
 		</script>
