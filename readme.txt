@@ -64,6 +64,13 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.3.0 =
+* Add dashboard notice for config problems.
+* Add notification email options.
+
+= 2.2.3 =
+* Remove jQuery dependency in code that replaces tel:// links.
+
 = 2.2.2 =
 * Add functionality to replace phone numbers inside tel:// links.
 
@@ -80,6 +87,10 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 * Add support for mma-noreplace class.
 
 == Upgrade Notice ==
+
+= 2.3.0 =
+* This release adds additional support detecting and troubleshooting configuration problems that can lead
+  to lost AdWords conversions.
 
 = 2.2.2 =
 * Add functionality to replace phone numbers inside tel:// links.

@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.2.2
+Version: 2.3.0
 Author URI: http://www.messagemetric.com
 */
 
@@ -95,8 +95,34 @@ class MessageMetricAssistant {
 		add_filter('plugin_action_links_' . plugin_basename(__FILE__), array(&$this, 'filter_plugin_actions'), 10, 2);
 	}
 
+	function admin_notice_config_errors() {
+		echo '<div class="mma-admin-error error">';
+		echo  '<h3>MMA Call Tracking</h3>';
+		echo  '<p>One or more potential configuration errors have been detected:</p>';
+		echo  '<style>.mma-admin-error li { margin-left:1em;margin-bottom:0; }</style>';
+		echo  '<ul style="list-style-type:disc;margin:.5em 1em">';
+		if (empty($this->options['customer_id'])) {
+			echo '<li>Please set your AdWords Customer ID. Ad clicks cannot be converted without this value.</li>';
+		}
+		if (empty($this->options['conversion_name'])) {
+			echo '<li>Please set your AdWords Conversion Type. Ad clicks cannot be converted unless this value is ';
+			echo  'set to the same value in your AdWords account.</li>';
+		}
+		if (!empty($this->options['not_paid_errors'])) {
+			echo '<li>'.$this->options['not_paid_errors'].' AdWords Ad click(s) have been received that could not be ';
+			echo  'replaced with AdWords tracking numbers (numbers with Display When set to URL Params). Please make ';
+			echo  'sure your phone settings are correct. Re-save your MMA Call Tracking settings to reset this value.';
+			echo '</li>';
+		}
+		echo  '</ul>';
+		echo '</div>';
+	}
+
 	function admin_notice_auth_invalid() {
-		echo '<div class="error"><p><strong>Error connecting to Message Metric. Please make your username name and password are configured correctly.</strong></p></div>';
+		echo '<div class="error">';
+		echo  '<h3>MMA Call Tracking</h3>';
+		echo  '<p><strong>Error connecting to Message Metric. Please make your username name and password are configured correctly.</strong></p>';
+		echo '</div>';
 	}
 
 	function deactivate_plugin() {
@@ -109,8 +135,18 @@ class MessageMetricAssistant {
 	}
 
 	function init_plugin() {
-		if (!empty($this->options['username']) && !$this->options['auth_valid']) {
-			add_action('admin_notices', array(&$this, 'admin_notice_auth_invalid'));
+		if (!empty($this->options['username'])) {
+			/* Notify the user of invalid MM credentials */
+			if (!$this->options['auth_valid']) {
+				add_action('admin_notices', array(&$this, 'admin_notice_auth_invalid'));
+			}
+
+			/* Notify the user of configuration problems */
+			if (   empty($this->options['customer_id'])
+			    || empty($this->options['conversion_name'])
+			    || !empty($this->options['not_paid_errors'])) {
+				add_action('admin_notices', array(&$this, 'admin_notice_config_errors'));
+			}
 		}
 	}
 
@@ -120,6 +156,13 @@ class MessageMetricAssistant {
 			$_SESSION['MSGMETRIC_ASSISTANT_ADWORD_TERM'] = $_REQUEST['mma_term'];
 		}
 		if (!empty($_REQUEST['gclid']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'])) {
+			$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA'] = array(
+				'gclid'=>$_REQUEST['gclid'],
+				'mma_term'=>$_REQUEST['mma_term'],
+				'referrer'=>!empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
+				'user_agent'=>$_SERVER['HTTP_USER_AGENT'],
+				);
+
 			error_log('mma_call_tracking: ad click: mma_term='.$_REQUEST['mma_term'].', gclid='.$_REQUEST['gclid']);
 			if (!empty($_SERVER['HTTP_REFERER'])) error_log('mma_call_tracking: ad click: referrer='.$_SERVER['HTTP_REFERER']);
 			error_log('mma_call_tracking: ad click: user agent='.$_SERVER['HTTP_USER_AGENT']);
@@ -153,6 +196,11 @@ class MessageMetricAssistant {
 		if (empty($the_options['replace_list'])) $the_options['replace_list'] = array();
 		if (empty($the_options['phone_list'])) $the_options['phone_list'] = array();
 		if (empty($the_options['phone_groups'])) $the_options['phone_groups'] = array();
+
+		if (empty($the_options['notify_email'])) $the_options['notify_email'] = '';
+		if (empty($the_options['notify_mmsupport'])) $the_options['notify_mmsupport'] = 0;
+		if (empty($the_options['notify_mmsent'])) $the_options['notify_mmsent'] = false;
+		if (empty($the_options['not_paid_errors'])) $the_options['not_paid_errors'] = 0;
 
 		$this->options = $the_options;
 	}
@@ -239,6 +287,19 @@ class MessageMetricAssistant {
 				<div style="margin:.5em 1.5em">Automatically replace phone numbers wherever they are found on your web site.  This
 					mode works with caching plugins like W3 Total Cache but users may see the original phone number briefly before
 					it is replaced with a Message Metric number.</div>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr valign="top">
+		<th scope="row"><?php _e('Troubleshooting:', $this->plugin_plug); ?></th>
+		<td>
+			<div><strong>Notification Email</strong> <em>(Send an email when configuration problems are detected)</em></div>
+			<div><input type="text" name="notify_email" value="<?php echo $this->options['notify_email'] ?>" placeholder="email address" class="widefat" /></div>
+			<br/>
+			<div><strong>Notification Message Metric Support</strong></div>
+			<div><input type="checkbox" name="notify_mmsupport" value="1" <?php echo $this->options['notify_mmsupport'] ? 'checked' : '' ?> />
+				Also send Message Metric Support a copy of any notices that are sent.</div>
+			<div><em>Note: a copy of your configuration will also be included that Support may use to help resolve the problem.</em></div>
 		</td>
 		<td>&nbsp;</td>
 	</tr>
@@ -518,8 +579,8 @@ jQuery(function(){
 				list($regex, $nphone) = $this->get_regex($pattern, "$rphone", $phone);
 				echo 'farDT(document.body, { find: "'.$regex.'", replace: mob ? "<a href=\"tel:'.$tphone.'\">'.$nphone.'</a>" : "'.$nphone.'", filterElements: fel });'.PHP_EOL;
 			}
+		    echo 'var $a=document.querySelector("a[href^=\"tel:\"]"); if ($a) $a.href = $a.href.replace("'.$rphone.'", "'.$phone.'")'.PHP_EOL;
 		}
-		echo 'var $a=$("a[href^=\"tel:\"]");$a.attr("href", $a.attr("href").replace("'.$rphone.'", "'.$phone.'"))'.PHP_EOL;
 		?>
 		});
 		</script>
@@ -686,18 +747,27 @@ jQuery(function(){
 
 		/* If there is a gclid, notify Message Metric of the click. */
 		if (!empty($gclid)) {
+			$paid = ($this->options['phone_list'][$match]['when'] == 'paid');
+
 			$click_data = array(
 				'customer_id'=>$this->options['customer_id'],
 				'conversion'=>$this->options['conversion_name'],
 				'gclid'=>$gclid,
 				'phone'=>$match,
 				'match'=>$did_match ? 1 : 0,
-				'paid'=>($this->options['phone_list'][$match]['when'] == 'paid'),
+				'paid'=>$paid,
 				'tentative'=>0,
 				);
 
 			$this->send_server_request('record_ad_click', $click_data);
 			unset($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID']);
+
+			if (!empty($gclid) && !$paid && !empty($this->options['notify_email'])) {
+				$this->options['not_paid_errors']++;
+				$this->save_options();
+
+				$this->send_notification('not_paid');
+			}
 		}
 
 		$_SESSION['MSGMETRIC_ASSISTANT_PHONES'][$key] = $match;
@@ -825,6 +895,7 @@ jQuery(function(){
 		if (!empty($_POST['mma_save_config'])) {
 			$fields = array(
 				'username', 'auth_key', 'customer_id', 'conversion_name', 'phones', 'assist_mode',
+				'notify_email', 'notify_mmsupport',
 				);
 			foreach ($fields as $field) {
 				$value = isset($_POST[$field]) ? $_POST[$field] : '';
@@ -841,6 +912,9 @@ jQuery(function(){
 
 				$this->options[$field] = $value;
 			}
+
+			$this->options['notify_mmsent'] = false;
+			$this->options['not_paid_errors'] = 0;
 		}
 
 		$data = $this->get_phone_data();
@@ -936,7 +1010,7 @@ jQuery(function(){
 			'auth_hash'=>md5($auth_token.$this->options['auth_key']),
 			'version'=>1,
 			), $params);
-        	$post_data = http_build_query($post_data);
+		$post_data = http_build_query($post_data);
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -963,6 +1037,45 @@ jQuery(function(){
 
 		$rc = $this->send_server_request('save_phone_data', $this->phone_data);
 		return ($rc != 'auth' && $rc != 'error');
+	}
+
+	function send_notification($type) {
+		switch ($type) {
+		case 'not_paid':
+			$explanation = 'Your web site received an AdWords ad click, but call tracking is not set up correctly to show an '.
+				'AdWords tracking number.  Usually, this means you either do not have any phone numbers set up with the '.
+				'"Display When: URL Params" option selected or you have an Ad that is not configured with the correct mma_term '.
+				'parameter. Please check your call tracking settings to make sure they are correct.';
+			break;
+		}
+
+		$message  = '<p>'.$explanation.'</p>';
+		$message .= '<p>Details:';
+		$message .=  '<div style="margin:.5em 1em">';
+		$message .=   'GCLID: '.$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA']['gclid'].'<br/>';
+		$message .=   'mma_term: '.$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA']['mma_term'].'<br/>';
+		$message .=   'Referrer: '.$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA']['referrer'].'<br/>';
+		$message .=   'User Agent: '.$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA']['user_agent'].'<br/>';
+		if ($type == 'not_paid') {
+			$message .= '# Clicks: '.$this->options['not_paid_errors'];
+		}
+		$message .=  '</div>';
+		$message .= '</p>';
+
+		wp_mail($this->options['notify_email'], 'MMA Call Tracking Notice', $message.'<p>Thanks for using Message Metric!</p>');
+
+		if ($this->options['notify_mmsupport'] && !$this->options['notify_mmsent']) {
+			$this->options['notify_mmsent'] = true;
+			$this->save_options();
+
+			$message .= '<br/>';
+			$message .= '<div>Site: '.get_option('siteurl').'</div>';
+			$message .= '<div>Admin: '.get_option('admin_email').'</div>';
+			$message .= '<div>Config:</div>';
+			$message .= '<pre>'.var_export($this->options,1).'</pre>';
+
+			wp_mail('support@messagemetric.com', 'MMA Troubleshooting Notice', $message);
+		}
 	}
 
 	/* shortcode_phone_fn
