@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.3.0
+Version: 2.3.1
 Author URI: http://www.messagemetric.com
 */
 
@@ -155,7 +155,8 @@ class MessageMetricAssistant {
 		if (!empty($_REQUEST['mma_term']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_TERM'])) {
 			$_SESSION['MSGMETRIC_ASSISTANT_ADWORD_TERM'] = $_REQUEST['mma_term'];
 		}
-		if (!empty($_REQUEST['gclid']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID'])) {
+error_log('bot: '.($this->is_bot() ? 'yes' : 'no'));
+		if (!empty($_REQUEST['gclid']) && empty($_SESSION['MSGMETRIC_ASSISTANT_ADWORD_GCLID']) && !$this->is_bot()) {
 			$_SESSION['MSGMETRIC_ASSISTANT_DEBUG_DATA'] = array(
 				'gclid'=>$_REQUEST['gclid'],
 				'mma_term'=>$_REQUEST['mma_term'],
@@ -969,6 +970,14 @@ jQuery(function(){
 		} else {
 			$this->save_options();
 			$this->post_message = 'Your changes were sucessfully saved. ';
+		}
+	}
+
+	function is_bot() {
+		if (isset($_SERVER['HTTP_USER_AGENT']) && preg_match('/bot|crawl|slurp|spider/i', $_SERVER['HTTP_USER_AGENT'])) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 

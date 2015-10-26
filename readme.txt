@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.3.1 =
+* Prevent the reporting of ad "clicks" when user agent shows that page is being loaded by a bot.
+
 = 2.3.0 =
 * Add dashboard notice for config problems.
 * Add notification email options.
@@ -80,12 +83,6 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 = 2.2.0 =
 * Implement new, simplified call tracking javascript.
 
-= 2.1.1 =
-* Improve error handling.
-
-= 2.1.0 =
-* Add support for mma-noreplace class.
-
 == Upgrade Notice ==
 
 = 2.3.0 =
@@ -97,10 +94,3 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 = 2.2.0 =
 * Implement new, more simplified, more robust call tracking javascript code.
-
-= 2.1.1 =
-* Improve error handling.
-
-= 2.1.0 =
-* Add support for a mma-noreplace class that can be added to tags to prevent a phone number inside that tag
-  from getting replaced.
