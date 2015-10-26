@@ -64,6 +64,9 @@ Yes, you must have a Message Metric account to use the MMA [Call Tracking Plugin
 
 == Changelog ==
 
+= 2.3.2 =
+* Prevent PHP warning when refurl match value is empty.
+
 = 2.3.1 =
 * Prevent the reporting of ad "clicks" when user agent shows that page is being loaded by a bot.
 

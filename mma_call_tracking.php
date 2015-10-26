@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.3.1
+Version: 2.3.2
 Author URI: http://www.messagemetric.com
 */
 
@@ -701,7 +701,7 @@ jQuery(function(){
 
 			case 'refurl':
 				$value = $phone_data['refurl'];
-				if (!empty($refurl) && strpos($refurl, $value) !== false) {
+				if (!empty($refurl) && !empty($value) && strpos($refurl, $value) !== false) {
 					if (!empty($phone_data['group'])) $group = $phone_data['group'];
 
 					if ($weight < 10) {
