@@ -24,7 +24,7 @@
 Plugin Name: MMA Call Tracking
 Description: Track your calls with Message Metric.
 Author: Message Metric
-Version: 2.3.3
+Version: 2.3.4
 Author URI: http://www.messagemetric.com
 */
 
@@ -96,8 +96,11 @@ class MessageMetricAssistant {
 	}
 
 	function admin_notice_config_errors() {
+		$url =  $_SERVER['REQUEST_URI'];
+		if (strpos($url, 'mma_hide_notify') === false) $url .= (strpos($url, '?') !== false ? '&' : '?') . 'mma_hide_notify=1';
+
 		echo '<div class="mma-admin-error error">';
-		echo  '<h3>MMA Call Tracking</h3>';
+		echo  '<h3>MMA Call Tracking <span style="float:right;font-size:.75em"><a href="'.$url.'">(hide)</a></span></h3>';
 		echo  '<p>One or more potential configuration errors have been detected:</p>';
 		echo  '<style>.mma-admin-error li { margin-left:1em;margin-bottom:0; }</style>';
 		echo  '<ul style="list-style-type:disc;margin:.5em 1em">';
@@ -134,7 +137,20 @@ class MessageMetricAssistant {
 		return $links;
 	}
 
+	function has_paid_number() {
+		foreach ($this->options['phone_list'] as $phone=>$phone_data) {
+			if ($phone_data['when'] == 'paid') return true;
+		}
+
+		return false;
+	}
+
 	function init_plugin() {
+		if (empty($_POST) && !empty($_GET['mma_hide_notify'])) {
+			$this->options['notify_dashboard'] = 0;
+			$this->save_options();
+		}
+
 		if (!empty($this->options['username'])) {
 			/* Notify the user of invalid MM credentials */
 			if (!$this->options['auth_valid']) {
@@ -142,9 +158,12 @@ class MessageMetricAssistant {
 			}
 
 			/* Notify the user of configuration problems */
-			if (   empty($this->options['customer_id'])
-			    || empty($this->options['conversion_name'])
-			    || !empty($this->options['not_paid_errors'])) {
+			if (   $this->is_admin_page()
+			    && $this->options['notify_dashboard']
+			    && $this->has_paid_number()
+			    && (   empty($this->options['customer_id'])
+			        || empty($this->options['conversion_name'])
+			        || !empty($this->options['not_paid_errors']))) {
 				add_action('admin_notices', array(&$this, 'admin_notice_config_errors'));
 			}
 		}
@@ -183,6 +202,19 @@ class MessageMetricAssistant {
 		$_SESSION['MSGMETRIC_ASSISTANT_PHONES'][''] = $this->get_msgmetric_phone();
 	}
 
+	function is_admin_page() {
+		global $pagenow;
+
+		if ($pagenow == 'admin.php') {
+			$page = !empty($_GET['page']) ? $_GET['page'] : '';
+			return in_array($page, array('', 'mma_call_tracking_menu', 'mma_call_tracking_menu2'));
+		} else if ($pagenow == 'index.php') {
+			return strpos(get_bloginfo('wpurl').$_SERVER['REQUEST_URI'], admin_url()) !== false;
+		}
+
+		return false;
+	}
+
 	function load_options() {
 		$the_options = get_option($this->plugin_plug.'_options');
 
@@ -197,10 +229,11 @@ class MessageMetricAssistant {
 		if (empty($the_options['phone_list'])) $the_options['phone_list'] = array();
 		if (empty($the_options['phone_groups'])) $the_options['phone_groups'] = array();
 
-		if (empty($the_options['notify_email'])) $the_options['notify_email'] = '';
-		if (empty($the_options['notify_mmsupport'])) $the_options['notify_mmsupport'] = 0;
-		if (empty($the_options['notify_mmsent'])) $the_options['notify_mmsent'] = false;
-		if (empty($the_options['not_paid_errors'])) $the_options['not_paid_errors'] = 0;
+		if (!isset($the_options['notify_dashboard'])) $the_options['notify_dashboard'] = 1;
+		if (!isset($the_options['notify_email'])) $the_options['notify_email'] = '';
+		if (!isset($the_options['notify_mmsupport'])) $the_options['notify_mmsupport'] = 0;
+		if (!isset($the_options['notify_mmsent'])) $the_options['notify_mmsent'] = false;
+		if (!isset($the_options['not_paid_errors'])) $the_options['not_paid_errors'] = 0;
 
 		$this->options = $the_options;
 	}
@@ -293,6 +326,10 @@ class MessageMetricAssistant {
 	<tr valign="top">
 		<th scope="row"><?php _e('Troubleshooting:', $this->plugin_plug); ?></th>
 		<td>
+			<div><strong>Dashboard Notifications</strong>
+			<div><input type="checkbox" name="notify_dashboard" value="1" <?php echo $this->options['notify_dashboard'] ? 'checked' : '' ?> />
+				Notify me of potential configuration prolbems when I log into my WordPress dashboard.</div>
+			<br/>
 			<div><strong>Notification Email</strong> <em>(Send an email when configuration problems are detected)</em></div>
 			<div><input type="text" name="notify_email" value="<?php echo $this->options['notify_email'] ?>" placeholder="email address" class="widefat" /></div>
 			<br/>
@@ -615,6 +652,12 @@ jQuery(function(){
 			$html .= '<p>Use a <code>phone</code> (e.g. <code>[msgmetric_phone phone="5055551212"]</code>) value to load the page with another ';
 			$html .=   'number - usually your primary contact number - before displaying your Message Metric number.  This can be helpful for SEO ';
 			$html .=   'as this number will consistently be visible to search engines.</p>';
+		} else {
+			$html  = '<p style="margin-bottom:.5em">MMA Call Tracking will usually replace all instances of phone numbers you have identified as replacement numbers. If, however, ';
+			$html .=   'you have places where you would like to retain a number without it being replaced you may use the <code>mma-noreplace</code> class ';
+			$html .=   'in your HTML to prevent replacement.  For example, you could have the following HTML on your site:</p>';
+			$html .= '<div style="margin:0 1em">&lt;p&gt;Call us at &lt;span class="mma-noreplace"&gt;505-555-1212&lt;/span&gt; or 505-555-1212&lt;/p&gt;</div>';
+			$html .= '<p style="margin-top:.5em">In this case only the second instance of the phone number would be replaced.</p>';
 		}
 		if ($page == 'phones') {
 			$html .= '<p>Use the <code>location</code> and <code>test</code> values to restrict the phone numbers that are displayed. This may be useful, ';
@@ -895,7 +938,7 @@ jQuery(function(){
 		if (!empty($_POST['mma_save_config'])) {
 			$fields = array(
 				'username', 'auth_key', 'customer_id', 'conversion_name', 'phones', 'assist_mode',
-				'notify_email', 'notify_mmsupport',
+				'notify_dashboard', 'notify_email', 'notify_mmsupport',
 				);
 			foreach ($fields as $field) {
 				$value = isset($_POST[$field]) ? $_POST[$field] : '';
@@ -1070,7 +1113,8 @@ jQuery(function(){
 		$message .=  '</div>';
 		$message .= '</p>';
 
-		wp_mail($this->options['notify_email'], 'MMA Call Tracking Notice', $message.'<p>Thanks for using Message Metric!</p>');
+		wp_mail($this->options['notify_email'], 'MMA Call Tracking Notice', $message.'<p>Thanks for using Message Metric!</p>',
+			array('Content-Type: text/html; charset=UTF-8'));
 
 		if ($this->options['notify_mmsupport'] && !$this->options['notify_mmsent']) {
 			$this->options['notify_mmsent'] = true;
@@ -1079,10 +1123,14 @@ jQuery(function(){
 			$message .= '<br/>';
 			$message .= '<div>Site: '.get_option('siteurl').'</div>';
 			$message .= '<div>Admin: '.get_option('admin_email').'</div>';
-			$message .= '<div>Config:</div>';
-			$message .= '<pre>'.var_export($this->options,1).'</pre>';
 
-			wp_mail('support@messagemetric.com', 'MMA Troubleshooting Notice', $message);
+			$tmpfile = tempnam('/tmp', 'options-');
+			$options = $this->options;
+			unset($options['auth_key']);
+			@file_put_contents($tmpfile, var_export($options, 1));
+			wp_mail('support@messagemetric.com', 'MMA Troubleshooting Notice', $message,
+				array('Content-Type: text/html; charset=UTF-8'), $tmpfile);
+			unlink($tmpfile);
 		}
 	}
 
